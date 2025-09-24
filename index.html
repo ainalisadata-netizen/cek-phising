@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendeteksi Phishing AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            resize: vertical;
+            min-height: 150px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .safe {
+            color: green;
+        }
+        .unsafe {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Pendeteksi Phishing AI</h1>
+    <p>Tempelkan URL atau isi email yang mencurigakan di bawah ini untuk diperiksa.</p>
+    <textarea id="inputText" placeholder="Contoh: https://akun-paypal-verifikasi-anda.com/login..."></textarea>
+    <button onclick="checkText()">Periksa Sekarang</button>
+    <div id="result"></div>
+</div>
+
+<script>
+    async function checkText() {
+        const inputText = document.getElementById('inputText').value;
+        const resultDiv = document.getElementById('result');
+
+        if (inputText.trim() === '') {
+            resultDiv.textContent = 'Silakan masukkan teks atau URL untuk diperiksa.';
+            resultDiv.className = '';
+            return;
+        }
+
+        // Tampilkan pesan "Memeriksa..."
+        resultDiv.textContent = 'Memeriksa...';
+        resultDiv.className = '';
+
+        // Di sini kita akan memanggil serverless function kita
+        try {
+            const response = await fetch('/api/check-phishing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text: inputText })
+            });
+
+            const data = await response.json();
+
+            // Tampilkan hasil dari serverless function
+            if (data.is_phishing) {
+                resultDiv.textContent = '🚨 Teks ini terlihat mencurigakan dan mungkin adalah phishing.';
+                resultDiv.className = 'unsafe';
+            } else {
+                resultDiv.textContent = '✅ Teks ini terlihat aman.';
+                resultDiv.className = 'safe';
+            }
+        } catch (error) {
+            resultDiv.textContent = 'Terjadi kesalahan. Coba lagi.';
+            resultDiv.className = 'unsafe';
+            console.error('Error:', error);
+        }
+    }
+</script>
+
+</body>
+</html>
